@@ -1,0 +1,22 @@
+[
+  {
+    "id": 1,
+    "nombre": "Carlos",
+    "apellidos": "Huamán",
+    "direccion": "Av. Perú 123",
+    "pais": "Perú",
+    "dni": "76528569",
+    "sueldo": 2500,
+    "fondo": "ONP"
+  },
+  {
+    "id": 2,
+    "nombre": "Lucía",
+    "apellidos": "Torres",
+    "direccion": "Jr. Lima 456",
+    "pais": "Perú",
+    "dni": "76528570",
+    "sueldo": 3200,
+    "fondo": "AFP"
+  }
+]

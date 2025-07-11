@@ -1,82 +1,62 @@
-const AFP_PORCENTAJE = 0.10;
-const ONP_PORCENTAJE = 0.13;
-const ESSALUD = 0.09;
-const GRATIFICACION = 1;
-const CTS = 0.0833;
-const VACACIONES = 0.0833;
+document.addEventListener("DOMContentLoaded", () => {
+  const tabla = document.getElementById("tablaPlanilla");
+  const trabajadores = JSON.parse(localStorage.getItem("trabajadores")) || [];
 
-let trabajadores = JSON.parse(localStorage.getItem("trabajadores")) || [];
+  const AFP_PORCENTAJE = 0.10;
+  const ONP_PORCENTAJE = 0.13;
+  const ESSALUD_PORCENTAJE = 0.09;
+  const GRATIFICACION_PORCENTAJE = 1;
+  const CTS_PORCENTAJE = 0.0833;
+  const VACACIONES_PORCENTAJE = 0.0833;
 
-document.getElementById("formularioTrabajador").addEventListener("submit", function (e) {
-  e.preventDefault();
+  function calcularPlanilla(trabajador) {
+    const sueldoBruto = parseFloat(trabajador.sueldo);
 
-  const nombre = document.getElementById("nombre").value.trim();
-  const sueldo = parseFloat(document.getElementById("sueldo").value);
-  const fondo = document.getElementById("fondo").value;
+    const descuentoFondo = trabajador.fondo === "ONP"
+      ? sueldoBruto * ONP_PORCENTAJE
+      : sueldoBruto * AFP_PORCENTAJE;
 
-  if (!nombre || isNaN(sueldo)) {
-    alert("Complete los campos correctamente.");
-    return;
+    const essalud = sueldoBruto * ESSALUD_PORCENTAJE;
+    const gratificacion = sueldoBruto * GRATIFICACION_PORCENTAJE;
+    const cts = sueldoBruto * CTS_PORCENTAJE;
+    const vacaciones = sueldoBruto * VACACIONES_PORCENTAJE;
+    const sueldoNeto = sueldoBruto - descuentoFondo;
+
+    return {
+      ...trabajador,
+      descuentoFondo,
+      essalud,
+      gratificacion,
+      cts,
+      vacaciones,
+      sueldoNeto
+    };
   }
 
-  const nuevoTrabajador = {
-    nombre,
-    sueldoBruto: sueldo,
-    usaOnp: fondo === "ONP",
-    activo: true,
-    id: Date.now()
-  };
+  function mostrarPlanilla() {
+    tabla.innerHTML = "";
+    trabajadores.forEach(trabajador => {
+      const datos = calcularPlanilla(trabajador);
 
-  const planilla = calcularPlanilla(nuevoTrabajador);
-  trabajadores.push(planilla);
-  localStorage.setItem("trabajadores", JSON.stringify(trabajadores));
+      const fila = document.createElement("tr");
+      fila.classList.add("animate__animated", "animate__fadeIn");
 
-  mostrarTrabajadores();
-  this.reset();
-});
-
-function calcularPlanilla(trabajador) {
-  const descuentoFondo = trabajador.usaOnp
-    ? trabajador.sueldoBruto * ONP_PORCENTAJE
-    : trabajador.sueldoBruto * AFP_PORCENTAJE;
-
-  const descuentoSalud = trabajador.sueldoBruto * ESSALUD;
-  const gratificacion = trabajador.sueldoBruto * GRATIFICACION;
-  const cts = trabajador.sueldoBruto * CTS;
-  const vacaciones = trabajador.sueldoBruto * VACACIONES;
-  const sueldoNeto = trabajador.sueldoBruto - descuentoFondo;
-
-  return {
-    ...trabajador,
-    descuentoFondo,
-    descuentoSalud,
-    gratificacion,
-    cts,
-    vacaciones,
-    sueldoNeto
-  };
-}
-
-function mostrarTrabajadores() {
-  const tabla = document.getElementById("tablaTrabajadores");
-  tabla.innerHTML = "";
-
-  trabajadores.forEach(t => {
-    if (t.activo) {
-      tabla.innerHTML += `
-        <tr>
-          <td>${t.nombre}</td>
-          <td>S/ ${t.sueldoBruto.toFixed(2)}</td>
-          <td>${t.usaOnp ? "ONP" : "AFP"}</td>
-          <td>S/ ${t.sueldoNeto.toFixed(2)}</td>
-          <td>S/ ${t.gratificacion.toFixed(2)}</td>
-          <td>S/ ${t.cts.toFixed(2)}</td>
-          <td>S/ ${t.vacaciones.toFixed(2)}</td>
-        </tr>
+      fila.innerHTML = `
+        <td>${datos.nombre}</td>
+        <td>${datos.apellidos}</td>
+        <td>S/ ${parseFloat(datos.sueldo).toFixed(2)}</td>
+        <td>${datos.fondo}</td>
+        <td>S/ ${datos.descuentoFondo.toFixed(2)}</td>
+        <td>S/ ${datos.essalud.toFixed(2)}</td>
+        <td>S/ ${datos.gratificacion.toFixed(2)}</td>
+        <td>S/ ${datos.cts.toFixed(2)}</td>
+        <td>S/ ${datos.vacaciones.toFixed(2)}</td>
+        <td>S/ ${datos.sueldoNeto.toFixed(2)}</td>
       `;
-    }
-  });
-}
 
-// Mostrar datos al cargar
-mostrarTrabajadores();
+      tabla.appendChild(fila);
+    });
+  }
+
+  mostrarPlanilla();
+});
